@@ -1,0 +1,44 @@
+services:
+  steampipe:
+    build:
+      context: .
+      dockerfile: Dockerfile.steampipe
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p 9193 -U steampipe"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  powerpipe:
+    build:
+      context: .
+      dockerfile: Dockerfile.powerpipe
+    depends_on:
+      steampipe:
+        condition: service_healthy
+    restart: unless-stopped
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+    command:
+      - --provider=oidc
+      - --oidc-issuer-url=https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+      - --client-id=${OAUTH2_PROXY_CLIENT_ID}
+      - --client-secret=${OAUTH2_PROXY_CLIENT_SECRET}
+      - --cookie-secret=${OAUTH2_PROXY_COOKIE_SECRET}
+      - --redirect-url=https://${DOMAIN}/oauth2/callback
+      - --upstream=http://powerpipe:9033
+      - --http-address=0.0.0.0:4180
+      - --email-domain=*
+      - --cookie-secure=true
+      - --reverse-proxy=true
+      - --skip-provider-button=true
+      - --oidc-groups-claim=groups
+      - --allowed-group=${ENTRA_ALLOWED_GROUP_ID}
+    ports:
+      - "4180:4180"
+    depends_on:
+      - powerpipe
+    restart: unless-stopped

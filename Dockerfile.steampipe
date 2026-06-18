@@ -1,0 +1,15 @@
+FROM ghcr.io/turbot/steampipe:latest
+
+# Install AWS plugin (se actualiza en cada inicio via entrypoint)
+RUN steampipe plugin install aws
+
+# Copy connection config
+COPY config/aws.spc /home/steampipe/.steampipe/config/aws.spc
+
+# Entrypoint: actualiza plugin + inicia service
+COPY scripts/entrypoint-steampipe.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9193
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

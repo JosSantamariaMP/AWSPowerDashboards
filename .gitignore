@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Coolify managed
+caddy_data/
+caddy_config/

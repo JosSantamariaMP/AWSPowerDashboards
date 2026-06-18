@@ -1,0 +1,9 @@
+{$DOMAIN:localhost} {
+  reverse_proxy oauth2-proxy:4180
+
+  header {
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+  }
+}

@@ -1,0 +1,14 @@
+FROM ghcr.io/turbot/powerpipe:latest
+
+# Copy mod definition and install dependencies (cache del build)
+COPY config/mod.pp /workspace/mod.pp
+WORKDIR /workspace
+RUN powerpipe mod install
+
+# Entrypoint: actualiza mods + inicia server
+COPY scripts/entrypoint-powerpipe.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9033
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
