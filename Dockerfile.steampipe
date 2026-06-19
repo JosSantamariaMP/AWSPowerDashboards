@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create steampipe user (non-root)
 RUN useradd -m -s /bin/bash steampipe
 
-# Install Steampipe CLI as root
-RUN curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh | sh -s -- -l /usr/local/bin \
+# Install Steampipe CLI as root (note: install.sh is in scripts/ subfolder)
+RUN curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/scripts/install.sh | sh -s -- -l /usr/local/bin \
     && steampipe --version
 
 # Switch to steampipe user for plugin install
