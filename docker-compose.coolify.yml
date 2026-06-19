@@ -32,11 +32,20 @@ services:
       - --upstream=http://powerpipe:9033
       - --http-address=0.0.0.0:4180
       - --email-domain=*
+      # Cookie segura: Traefik termina TLS, el proxy ve HTTP pero la cookie
+      # debe marcarse Secure porque el browser la envía por HTTPS
       - --cookie-secure=true
+      # Confiar en headers X-Forwarded-* de Traefik
       - --reverse-proxy=true
+      # No mostrar botón "Sign in with..." — redirige directo a EntraID
       - --skip-provider-button=true
+      # Restricción por grupos de EntraID (OR logic: cualquier grupo da acceso)
       - --oidc-groups-claim=groups
-      - --allowed-group=${ENTRA_ALLOWED_GROUP_ID}
+      - --allowed-group=${ENTRA_ALLOWED_GROUP_ID_1}
+      - --allowed-group=${ENTRA_ALLOWED_GROUP_ID_2}
+      - --allowed-group=${ENTRA_ALLOWED_GROUP_ID_3}
+      # CRITICAL: Confiar en X-Forwarded-Proto de Traefik para evitar redirect loops
+      - --real-client-ip-header=X-Forwarded-For
     ports:
       - "4180:4180"
     depends_on:
