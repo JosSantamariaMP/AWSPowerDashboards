@@ -10,26 +10,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create steampipe user (non-root)
 RUN useradd -m -s /bin/bash steampipe
 
-# Install Steampipe CLI (latest v2.x)
-RUN curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh | sh -s -- -l /usr/local/bin
+# Install Steampipe CLI as root
+RUN curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh | sh -s -- -l /usr/local/bin \
+    && steampipe --version
 
-# Switch to steampipe user
+# Switch to steampipe user for plugin install
 USER steampipe
 WORKDIR /home/steampipe
 
-# Install AWS plugin
+# Initialize steampipe and install AWS plugin
+ENV PATH="/usr/local/bin:${PATH}"
 RUN steampipe plugin install aws
 
 # Copy connection config
 COPY --chown=steampipe:steampipe config/aws.spc /home/steampipe/.steampipe/config/aws.spc
 
-# Entrypoint: actualiza plugin + inicia service
-COPY --chown=steampipe:steampipe scripts/entrypoint-steampipe.sh /usr/local/bin/entrypoint.sh
-
-USER root
-RUN chmod +x /usr/local/bin/entrypoint.sh
-USER steampipe
+# Entrypoint script
+COPY --chown=steampipe:steampipe scripts/entrypoint-steampipe.sh /home/steampipe/entrypoint.sh
+RUN chmod +x /home/steampipe/entrypoint.sh
 
 EXPOSE 9193
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/home/steampipe/entrypoint.sh"]
